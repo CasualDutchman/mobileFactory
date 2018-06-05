@@ -25,11 +25,11 @@ public class AnimationManager : MonoBehaviour {
         }
 	}
 
-    public void Register(SpriteRenderer render, MachineTile machine) {
+    public void Register(MachineTile machine) {
         bool hasRegistered = false;
         foreach(AnimationInfo i in info) {
-            if (i.machine == machine) {
-                i.renderers.Add(render);
+            if (i.machines[0].machine.machineName == machine.machine.machineName) {
+                i.machines.Add(machine);
                 hasRegistered = true;
                 break;
             }
@@ -37,20 +37,19 @@ public class AnimationManager : MonoBehaviour {
 
         if (!hasRegistered) {
             AnimationInfo ai = new AnimationInfo() {
-                machine = machine,
                 speed = 15
             };
-            ai.renderers.Add(render);
+            ai.machines.Add(machine);
             info.Add(ai);
         }
     }
 
-    public void Remove(SpriteRenderer sr) {
+    public void Remove(MachineTile mt) {
         AnimationInfo needsDeleting = null;
         foreach (AnimationInfo i in info) {
-            if (i.renderers.Contains(sr)) {
-                i.renderers.Remove(sr);
-                if(i.renderers.Count <= 0) {
+            if (i.machines.Contains(mt)) {
+                i.machines.Remove(mt);
+                if(i.machines.Count <= 0) {
                     needsDeleting = i;
                 }
                 break;
@@ -65,19 +64,20 @@ public class AnimationManager : MonoBehaviour {
 
 [System.Serializable]
 public class AnimationInfo {
-    public MachineTile machine;
-    public List<SpriteRenderer> renderers = new List<SpriteRenderer>();
+    public List<MachineTile> machines = new List<MachineTile>();
+    //public List<SpriteRenderer> renderers = new List<SpriteRenderer>();
+    //public List<Direction> directions = new List<Direction>();
     int index;
     public float timer;
     public float speed;
 
     public void AddChangeRenders() {
         index++;
-        if (index >= machine.machine.machineAnimation.Working(machine.direction).Length)
+        if (index >= machines[0].machine.machineAnimation.Working(Direction.East).Length)
             index = 0;
 
-        foreach(SpriteRenderer sr in renderers) {
-            sr.sprite = machine.machine.machineAnimation.Working(machine.direction)[index];
+        for (int i = 0; i < machines.Count; i++) {
+            machines[i].spriteRenderer.sprite = machines[i].machine.machineAnimation.Working(machines[i].direction)[index];
         }
 
         timer = 0;

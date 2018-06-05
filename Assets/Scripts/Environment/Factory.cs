@@ -23,6 +23,8 @@ public class Factory : MonoBehaviour {
     Vector2Int selecting = new Vector2Int(-1, -1);
     public GameObject selectionBox;
 
+    Vector3 lastMousePosition;
+
     void Start() {
         machineList = new MachineTile[gridSize.x, gridSize.y];
 
@@ -51,16 +53,39 @@ public class Factory : MonoBehaviour {
 
     void Update() {
 #if UNITY_EDITOR
-        if (Input.GetMouseButtonDown(0) && !eventSystem.IsPointerOverGameObject()) {
-            Vector3 mouseToWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Select(Mathf.FloorToInt(mouseToWorld.x), Mathf.FloorToInt(mouseToWorld.y));
+        if (!eventSystem.IsPointerOverGameObject()) {
+            if (Input.GetMouseButtonDown(0)) {
+                Vector3 mouseToWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Select(Mathf.FloorToInt(mouseToWorld.x), Mathf.FloorToInt(mouseToWorld.y));
+
+                lastMousePosition = Input.mousePosition;
+            } 
+            else if (Input.GetMouseButtonUp(0)) {
+
+            }
+            else if (Input.GetMouseButton(0)) {
+
+            }
+            else{
+                lastMousePosition = new Vector3();
+            }
         }
 #endif
 #if UNITY_ANDROID
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) {
-            if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)) {
+        if (Input.touchCount > 0 && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)) {
+            if (Input.GetTouch(0).phase == TouchPhase.Stationary) {
                 Vector3 mouseToWorld = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
                 Select(Mathf.FloorToInt(mouseToWorld.x), Mathf.FloorToInt(mouseToWorld.y));
+            }
+
+            if (Input.GetTouch(0).phase == TouchPhase.Began) {
+                Debug.Log("Began");
+            }
+            if (Input.GetTouch(0).phase == TouchPhase.Moved) {
+                Debug.Log("Moved");
+            }
+            if (Input.GetTouch(0).phase == TouchPhase.Ended) {
+                Debug.Log("Ended");
             }
         }
 #endif
@@ -100,7 +125,7 @@ public class Factory : MonoBehaviour {
             spriteRenderer = sr
         };
 
-        AnimationManager.instance.Register(sr, machineList[selecting.x, selecting.y]);
+        AnimationManager.instance.Register(machineList[selecting.x, selecting.y]);
 
         uiManager.ChangeScreen(Screens.Select);
         Select(selecting.x, selecting.y);
@@ -116,7 +141,7 @@ public class Factory : MonoBehaviour {
 
     public void RemoveTile() {
         MachineTile mt = machineList[selecting.x, selecting.y];
-        AnimationManager.instance.Remove(mt.spriteRenderer);
+        AnimationManager.instance.Remove(mt);
 
         Destroy(mt.spriteRenderer.gameObject);
         machineList[selecting.x, selecting.y] = null;
@@ -128,6 +153,7 @@ public class Factory : MonoBehaviour {
 
 public enum Direction { North, South, East, West}
 
+[System.Serializable]
 public class MachineTile {
     public Machine machine;
     public Direction direction;

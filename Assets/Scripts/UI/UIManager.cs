@@ -39,6 +39,12 @@ public class UIManager : MonoBehaviour {
             GameObject go = Instantiate(shopItem, shopScroll);
             go.GetComponent<Button>().onClick.AddListener(() => factory.AddTile(k));
             go.transform.GetChild(0).GetComponent<Image>().sprite = list[i].icon;
+            Vector2 v2 = list[i].icon.rect.size * 6;
+            if (v2.y > 114) {
+                float multi = v2.y / 114f;
+                v2 = v2 * (1 / multi);
+            }
+            go.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = v2;
             go.transform.GetChild(1).GetComponent<Text>().text = list[i].machineName;
             go.transform.GetChild(2).GetComponent<Text>().text = "$" + list[i].price + ".000";
         }
@@ -92,11 +98,11 @@ public class UIManager : MonoBehaviour {
         yield return new WaitForEndOfFrame();
         while (playing) {
             if (!anim.isPlaying) {
-                if (i == 0 && upperLayer.GetChild(0) != null) {
+                if (i == 0 && upperLayer.childCount > 0) {
                     Hide(upperLayer.GetChild(0));
                     playing = false;
                 }
-                if (i == 1 && downLayer.GetChild(0) != null) {
+                if (i == 1 && downLayer.childCount > 0) {
                     Hide(downLayer.GetChild(0));
                     playing = false;
                 }
